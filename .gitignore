@@ -1,0 +1,5 @@
+# OS files
+.DS_Store
+
+# CPS raw extracts are too large for GitHub; keep local only
+cps/*.dat
