@@ -1,5 +1,28 @@
-# OS files
-.DS_Store
-
-# CPS raw extracts are too large for GitHub; keep local only
+# Raw CPS data (too large for GitHub)
 cps/*.dat
+cps/*.dat.gz
+
+# GSS microdata
+gss/**/*.dta
+gss/**/*.sav
+
+# Derived datasets (regenerable)
+output/*.dta
+
+# Logs (regenerable)
+*.log
+output/*.log
+
+# Graphs (regenerable)
+output/*.png
+
+# Stata swap files
+src/~*.stswp
+*.stswp
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Excel temp files
+~$*.xlsx
