@@ -1,4 +1,4 @@
-import delimited "o*net/Work Activities.txt", delimiter(tab) varnames(nonames) clear
+import delimited "onet/Work Activities.txt", delimiter(tab) varnames(nonames) clear
 drop in 1
 rename v1 soc_raw
 rename v2 element_id
@@ -19,7 +19,7 @@ collapse (mean) working_w_computers=wc task_routine_cog=rc task_nrc_analytic=nrc
 tempfile onet_wa
 save `onet_wa'
 
-import delimited "o*net/Work Context.txt", delimiter(tab) varnames(nonames) clear
+import delimited "onet/Work Context.txt", delimiter(tab) varnames(nonames) clear
 drop in 1
 rename v1 soc_raw
 rename v2 element_id
@@ -41,7 +41,7 @@ collapse (mean) degree_automation=da repeat_tasks=rt email_use=em ///
 tempfile onet_wc
 save `onet_wc'
 
-import delimited "o*net/Skills.txt", delimiter(tab) varnames(nonames) clear
+import delimited "onet/Skills.txt", delimiter(tab) varnames(nonames) clear
 drop in 1
 rename v1 soc_raw
 rename v2 element_id
@@ -59,7 +59,7 @@ collapse (mean) skill_cognitive=cog skill_social=ssk skill_tech=tch, by(soc_code
 tempfile onet_sk
 save `onet_sk'
 
-import delimited "o*net/Knowledge.txt", delimiter(tab) varnames(nonames) clear
+import delimited "onet/Knowledge.txt", delimiter(tab) varnames(nonames) clear
 drop in 1
 rename v1 soc_raw
 rename v2 element_id
@@ -77,7 +77,7 @@ collapse (mean) knowledge_computers=kc knowledge_math=km knowledge_english=ke, b
 tempfile onet_kn
 save `onet_kn'
 
-import delimited "o*net/Job Zones.txt", delimiter(tab) varnames(nonames) clear
+import delimited "onet/Job Zones.txt", delimiter(tab) varnames(nonames) clear
 drop in 1
 rename v1 soc_raw
 rename v2 job_zone
