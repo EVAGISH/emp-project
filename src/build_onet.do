@@ -1,3 +1,5 @@
+capture mkdir output
+
 import delimited "onet/Work Activities.txt", delimiter(tab) varnames(nonames) clear
 drop in 1
 rename v1 soc_raw
