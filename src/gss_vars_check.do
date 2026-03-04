@@ -1,4 +1,3 @@
-cd "/Users/eashan.vagish/Documents/econ3120/empproj"
 log using "output/gss_vars_check.log", replace text
 
 use "gss/2021/GSS2021.dta", clear

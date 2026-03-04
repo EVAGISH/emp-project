@@ -1,4 +1,3 @@
-cd "/Users/eashan.vagish/Documents/econ3120/empproj"
 capture mkdir output
 capture log close
 

@@ -1,5 +1,3 @@
-cd "/Users/eashan.vagish/Documents/econ3120/empproj"
-
 import delimited "o*net/Work Activities.txt", delimiter(tab) varnames(nonames) clear
 drop in 1
 rename v1 soc_raw

@@ -1,4 +1,3 @@
-cd "/Users/eashan.vagish/Documents/econ3120/empproj"
 log using "output/gss_coverage.log", replace text
 
 use "gss/2024/GSS2024.dta", clear
