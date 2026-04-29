@@ -240,4 +240,148 @@ estimates store G2
 
 estimates table G1 G2, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
 
+di _n(3)
+di "DIFFERENCE-IN-DIFFERENCES: 2022 vs 2024 (GSS)"
+
+use "output/gss_sample.dta", clear
+
+keep if inlist(year, 2022, 2024)
+
+gen joblose_r = 5 - joblose if !missing(joblose)
+gen jobfind_r = 4 - jobfind if !missing(jobfind)
+gen female    = (sex == 2) if !missing(sex)
+gen black     = (race == 2) if !missing(race)
+gen other_race = (race == 3) if !missing(race)
+gen ln_income = ln(conrinc) if conrinc > 0
+
+gen post = (year == 2024)
+sum lmoe_score, detail
+gen high_lmoe = (lmoe_score >= r(p50)) if !missing(lmoe_score)
+gen did = post * high_lmoe
+
+di _n(1)
+di "DiD: Job Loss Risk"
+
+reg joblose_r post high_lmoe did, robust
+estimates store DiD1
+
+reg joblose_r post high_lmoe did age female black other_race ///
+    i.degree ln_income hrs1, robust
+estimates store DiD2
+
+estimates table DiD1 DiD2, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
+
+di _n(1)
+di "DiD: Job Finding Difficulty"
+
+reg jobfind_r post high_lmoe did, robust
+estimates store DiD3
+
+reg jobfind_r post high_lmoe did age female black other_race ///
+    i.degree ln_income hrs1, robust
+estimates store DiD4
+
+estimates table DiD3 DiD4, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
+
+di _n(1)
+di "Triple Difference: DiD x White Collar"
+
+gen lmoe_x_wc = lmoe_score * white_collar
+gen did_x_wc = did * white_collar
+gen post_x_wc = post * white_collar
+gen highlmoe_x_wc = high_lmoe * white_collar
+
+reg joblose_r post high_lmoe did white_collar post_x_wc highlmoe_x_wc did_x_wc ///
+    age female black other_race i.degree ln_income hrs1, robust
+estimates store DDD1
+
+reg jobfind_r post high_lmoe did white_collar post_x_wc highlmoe_x_wc did_x_wc ///
+    age female black other_race i.degree ln_income hrs1, robust
+estimates store DDD2
+
+estimates table DDD1 DDD2, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
+
+di _n(3)
+di "DiD: Job Satisfaction (GSS)"
+
+gen satjob_r = 5 - satjob if !missing(satjob)
+
+reg satjob_r post high_lmoe did, robust
+estimates store DiD5
+
+reg satjob_r post high_lmoe did age female black other_race ///
+    i.degree ln_income hrs1, robust
+estimates store DiD6
+
+estimates table DiD5 DiD6, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
+
+di _n(3)
+di "DIFFERENCE-IN-DIFFERENCES: CPS Displacement"
+
+use "output/cps_sample.dta", clear
+
+gen female     = (sex == 2) if !missing(sex)
+gen black      = (race == 200) if !missing(race)
+gen other_race = (!inlist(race, 100, 200)) if !missing(race)
+gen educ_hs   = (educ == 73)
+gen educ_some = inrange(educ, 80, 100)
+gen educ_ba   = (educ == 111)
+gen educ_grad = inrange(educ, 123, 125)
+
+sum lmoe_score, detail
+gen high_lmoe = (lmoe_score >= r(p50)) if !missing(lmoe_score)
+
+tab year, sum(displaced)
+
+keep if inlist(year, 2020, 2024)
+gen post = (year == 2024)
+
+gen did = post * high_lmoe
+
+di _n(1)
+di "DiD: Displacement (CPS)"
+
+reg displaced post high_lmoe did [pw=wtfinl], robust
+estimates store DiD_C1
+
+reg displaced post high_lmoe did age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store DiD_C2
+
+estimates table DiD_C1 DiD_C2, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
+
+di _n(1)
+di "DiD: Displacement x White Collar (CPS)"
+
+gen did_x_wc = did * white_collar
+gen post_x_wc = post * white_collar
+gen highlmoe_x_wc = high_lmoe * white_collar
+
+reg displaced post high_lmoe did white_collar post_x_wc highlmoe_x_wc did_x_wc ///
+    age female black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store DiD_C3
+
+estimates table DiD_C3, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
+
+di _n(1)
+di "DiD: Re-employment among displaced (CPS)"
+
+preserve
+keep if displaced == 1
+
+reg re_employed post high_lmoe did [pw=wtfinl], robust
+estimates store DiD_R1
+
+reg re_employed post high_lmoe did age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store DiD_R2
+
+reg re_employed post high_lmoe did white_collar post_x_wc highlmoe_x_wc did_x_wc ///
+    age female black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store DiD_R3
+
+estimates table DiD_R1 DiD_R2 DiD_R3, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
+
+restore
+
 log close
