@@ -33,6 +33,12 @@ replace jtyears   = . if jtyears   <= 0
 replace durunemp  = . if durunemp  <= 0
 replace telwrkhr  = . if telwrkhr  < 0
 
+replace earnweek  = . if earnweek  >= 9999
+replace dwweekl   = . if dwweekl   >= 9999
+replace dwwagel   = . if dwwagel   >= 99.98
+replace hourwage  = . if hourwage  >= 999
+replace dwyears   = . if dwyears   >= 99.98
+
 gen displaced    = (dwlostjob == 2)
 gen re_employed  = (inlist(empstat, 10, 12))    if dwlostjob == 2
 gen wage_change  = (earnweek - dwweekl) / dwweekl if dwlostjob == 2 & dwweekl > 0 & earnweek > 0

@@ -106,4 +106,138 @@ estimates table D1 D2 D3, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
 
 restore
 
+di _n(3)
+di "SUBGROUP: CPS Displacement — Blue-Collar Only"
+
+reg displaced lmoe_score age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad ///
+    [pw=wtfinl] if white_collar == 0, robust
+estimates store C_blue
+
+di _n(3)
+di "SUBGROUP: CPS Displacement — White-Collar Only"
+
+reg displaced lmoe_score age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad ///
+    [pw=wtfinl] if white_collar == 1, robust
+estimates store C_white
+
+estimates table C_blue C_white, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
+
+di _n(3)
+di "POSITION ABOLISHED: Probit — Structural Displacement"
+
+preserve
+
+keep if displaced == 1 & !missing(dwreas)
+
+gen pos_abolished = (dwreas == 2) if !missing(dwreas)
+tab dwreas
+sum pos_abolished
+
+probit pos_abolished lmoe_score age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store E1
+
+probit pos_abolished lmoe_score white_collar lmoe_x_wc age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store E2
+
+margins, dydx(lmoe_score white_collar lmoe_x_wc)
+
+estimates table E1 E2, star(0.10 0.05 0.01) stats(N r2_p) b(%9.4f)
+
+restore
+
+di _n(3)
+di "RE-EMPLOYMENT: Probit — Among Displaced Workers"
+
+preserve
+
+keep if displaced == 1
+
+probit re_employed lmoe_score age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store R1
+
+probit re_employed lmoe_score white_collar lmoe_x_wc age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store R2
+
+margins, dydx(lmoe_score white_collar lmoe_x_wc)
+
+estimates table R1 R2, star(0.10 0.05 0.01) stats(N r2_p) b(%9.4f)
+
+restore
+
+di _n(3)
+di "JOB FINDING DIFFICULTY: GSS (OLS)"
+
+use "output/gss_sample.dta", clear
+
+gen jobfind_r = 4 - jobfind if !missing(jobfind)
+gen female    = (sex == 2) if !missing(sex)
+gen black     = (race == 2) if !missing(race)
+gen other_race = (race == 3) if !missing(race)
+gen ln_income = ln(conrinc) if conrinc > 0
+gen yr2022    = (year == 2022)
+gen yr2024    = (year == 2024)
+gen lmoe_x_wc = lmoe_score * white_collar
+
+reg jobfind_r lmoe_score, robust
+estimates store F1
+
+reg jobfind_r lmoe_score age female black other_race ///
+    i.degree ln_income hrs1 union_member self_emp yr2022 yr2024, robust
+estimates store F2
+
+reg jobfind_r lmoe_score white_collar lmoe_x_wc age female black other_race ///
+    i.degree ln_income hrs1 union_member self_emp yr2022 yr2024, robust
+estimates store F3
+
+estimates table F1 F2 F3, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
+
+di _n(3)
+di "ROUTINE COGNITIVE TASK INDEX: CPS Displacement"
+
+use "output/cps_sample.dta", clear
+
+gen female     = (sex == 2) if !missing(sex)
+gen black      = (race == 200) if !missing(race)
+gen other_race = (!inlist(race, 100, 200)) if !missing(race)
+gen educ_hs   = (educ == 73)
+gen educ_some = inrange(educ, 80, 100)
+gen educ_ba   = (educ == 111)
+gen educ_grad = inrange(educ, 123, 125)
+gen tcr_x_wc = task_routine_cog * white_collar
+
+reg displaced task_routine_cog [pw=wtfinl], robust
+estimates store T1
+
+reg displaced task_routine_cog age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store T2
+
+reg displaced task_routine_cog white_collar tcr_x_wc age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store T3
+
+estimates table T1 T2 T3, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
+
+di _n(3)
+di "DEGREE OF AUTOMATION AS CONTROL: CPS Displacement"
+
+gen lmoe_x_wc = lmoe_score * white_collar
+
+reg displaced lmoe_score white_collar lmoe_x_wc degree_automation age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store G1
+
+reg displaced lmoe_score white_collar lmoe_x_wc degree_automation ///
+    task_routine_cog age female ///
+    black other_race educ_hs educ_some educ_ba educ_grad [pw=wtfinl], robust
+estimates store G2
+
+estimates table G1 G2, star(0.10 0.05 0.01) stats(N r2) b(%9.4f)
+
 log close
