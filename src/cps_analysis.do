@@ -19,7 +19,7 @@ keep if inlist(dwlostjob, 1, 2)
 drop if (missing(occ2010) | occ2010 == 0) & (missing(dwocc) | dwocc == 0)
 
 gen occ_for_merge = occ2010
-replace occ_for_merge = dwocc if dwlostjob == 1 & !missing(dwocc) & dwocc > 0
+replace occ_for_merge = dwocc if dwlostjob == 2 & !missing(dwocc) & dwocc > 0
 drop if missing(occ_for_merge) | occ_for_merge == 0
 
 replace earnweek  = . if earnweek  <= 0
@@ -33,9 +33,9 @@ replace jtyears   = . if jtyears   <= 0
 replace durunemp  = . if durunemp  <= 0
 replace telwrkhr  = . if telwrkhr  < 0
 
-gen displaced    = (dwlostjob == 1)
-gen re_employed  = (inlist(empstat, 10, 12))    if dwlostjob == 1
-gen wage_change  = (earnweek - dwweekl) / dwweekl if dwlostjob == 1 & dwweekl > 0 & earnweek > 0
+gen displaced    = (dwlostjob == 2)
+gen re_employed  = (inlist(empstat, 10, 12))    if dwlostjob == 2
+gen wage_change  = (earnweek - dwweekl) / dwweekl if dwlostjob == 2 & dwweekl > 0 & earnweek > 0
 gen telework     = (telwrkpay == 1)              if !missing(telwrkpay)
 gen internet_home = (cinethp == 1)               if !missing(cinethp)
 gen work_computer = (cihforwk == 1)              if !missing(cihforwk)
@@ -160,13 +160,13 @@ hist earnweek, normal freq ///
     name(c_earn, replace)
 graph export "output/cps_hist_earnings.png", replace width(1200)
 
-hist wage_change if dwlostjob == 1 & inrange(wage_change, -1, 2), normal freq ///
+hist wage_change if dwlostjob == 2 & inrange(wage_change, -1, 2), normal freq ///
     title("Distribution of Wage Change After Displacement") ///
     xtitle("(Current - Lost) / Lost Earnings") ///
     name(c_wchg, replace)
 graph export "output/cps_hist_wage_change.png", replace width(1200)
 
-hist dwyears if dwlostjob == 1, normal freq ///
+hist dwyears if dwlostjob == 2, normal freq ///
     title("Distribution of Tenure at Lost Job") ///
     xtitle("Years") ///
     name(c_tenure, replace)
